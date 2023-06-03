@@ -2,7 +2,7 @@
 a convenient tool to convert a bunch of images into a timelapse
 
 ## usage
-- checkout this project or download the file [timelapse-converter.py]
+- checkout this project or download the file [timelapse-converter.py](./timelapse-converter.py)
 - use it in any directory of your device:
   - `py timelapse-converter.py [-h] [-f fps] -d input_directory -o output_file`
 
