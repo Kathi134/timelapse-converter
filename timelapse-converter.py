@@ -24,7 +24,20 @@ def start_up():
     except:
         print("usage: timelapse-converter.py [-h] [-f fps] -d input_directory -o output")
         exit(1)
+    
+    if Path(out).exists():
+        out = handle_exist(args.o)
     return (dir,out,fps)
+
+
+def handle_exist(name):
+    i = input(f"{name}.mp4 already exists. overwrite it? (y/n)")
+    if i.lower() != "y":
+        ext = 1
+        while(Path(f"{name}{ext}.mp4").exists()):
+            ext += 1
+        name = name + str(ext)
+    return f"{name}.mp4"
 
 
 def get_shape(imgs: list[Path]):
@@ -33,21 +46,24 @@ def get_shape(imgs: list[Path]):
     return (height, width)
 
 
-def build_video(video, imgs: list):
+def build_video(video, imgs: list, fps):
     init()
     for img_file in tqdm(imgs, bar_format="{l_bar}%s{bar}%s{r_bar}" % (Fore.GREEN, Style.RESET_ALL)):
         img = cv2.imread(os.path.join(img_file))
         video.write(img)
+    for i in range(fps):
+        video.write(cv2.imread(os.path.join(imgs[-1])))
     return video
 
 
 def main():
     dir, out, fps = start_up()    
     print(f"converting images in {dir} with {fps} FPS to {out}")
-    imgs = list(x for x in dir.iterdir() if x.is_file())
+    imgs = list(x for x in dir.iterdir() if x.is_file() and (x.name.lower().endswith(".jpg") or  x.name.lower().endswith(".png")))
     height, width = get_shape(imgs)
-    video = cv2.VideoWriter(out, cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
-    video = build_video(video, imgs)
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    video = cv2.VideoWriter(out, fourcc, fps, (width, height))
+    video = build_video(video, imgs, fps)
     video.release()
 
 if __name__=="__main__":
